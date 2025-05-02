@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>حاسبة بروتين وطاقة الحيوان</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      direction: rtl;
+      margin: 0 auto;
+      padding: 40px;
+      max-width: 750px;
+      background: #f0f8ff;
+      animation: fadeIn 1s ease-in;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2d5c42;
+    }
+    label, select, input, button {
+      margin: 10px 0;
+      display: block;
+      width: 100%;
+    }
+    select, input {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #218838;
+    }
+    #result {
+      margin-top: 30px;
+      font-weight: bold;
+      white-space: pre-line;
+      background: #e7f5e8;
+      color: #1a3e2a;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #c9e6cb;
+      animation: slideUp 0.7s ease-out;
+    }
+    .animal-img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin: 10px auto;
+      display: none;
+      animation: fadeIn 1s;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <h2>🐄 حاسبة البروتين والطاقة للحيوانات 🐑</h2>
+
+  <img id="animalImage" class="animal-img" src="" alt="صورة الحيوان">
+
+  <label>طريقة الحساب:</label>
+  <select id="method" onchange="toggleMethod()">
+    <option value="traditional">الطريقة التقليدية</option>
+    <option value="tmr">طريقة TMR</option>
+    <option value="nrc">طريقة NRC</option>
+  </select>
+
+  <label>نوع الحيوان:</label>
+  <select id="animal" onchange="updateAnimalImage()">
+    <option value="cow">بقرة</option>
+    <option value="buffalo">جاموس</option>
+    <option value="sheep">غنم</option>
+    <option value="goat">ماعز</option>
+  </select>
+
+  <label>الجنس:</label>
+  <select id="gender" onchange="toggleMilkOptions()">
+    <option value="male">ذكر</option>
+    <option value="female">أنثى</option>
+  </select>
+
+  <div id="milkStatus">
+    <label>هل تُنتج الحليب؟</label>
+    <select id="milkProd" onchange="toggleMilkInput()">
+      <option value="no">لا</option>
+      <option value="yes">نعم</option>
+    </select>
+  </div>
+
+  <div id="milkSection">
+    <label>كم لتر حليب في اليوم؟</label>
+    <input type="number" id="milkLiters">
+  </div>
+
+  <label>وزن الحيوان (كجم):</label>
+  <input type="number" id="weight">
+
+  <button onclick="calculate()">احسب</button>
+
+  <div id="result"></div>
+
+  <script>
+    function updateAnimalImage() {
+      const animal = document.getElementById("animal").value;
+      const img = document.getElementById("animalImage");
+      const images = {
+        cow: "https://cdn-icons-png.flaticon.com/512/1998/1998610.png",
+        buffalo: "https://cdn-icons-png.flaticon.com/512/1998/1998613.png",
+        sheep: "https://cdn-icons-png.flaticon.com/512/616/616408.png",
+        goat: "https://cdn-icons-png.flaticon.com/512/1998/1998612.png"
+      };
+      img.src = images[animal];
+      img.style.display = "block";
+    }
+
+    function toggleMilkOptions() {
+      const gender = document.getElementById("gender").value;
+      document.getElementById("milkStatus").style.display = (gender === "female") ? "block" : "none";
+      document.getElementById("milkSection").style.display = "none";
+    }
+
+    function toggleMilkInput() {
+      const milkProd = document.getElementById("milkProd").value;
+      document.getElementById("milkSection").style.display = (milkProd === "yes") ? "block" : "none";
+    }
+
+    function toggleMethod() {}
+
+    function calculate() {
+      const method = document.getElementById("method").value;
+      const animal = document.getElementById("animal").value;
+      const gender = document.getElementById("gender").value;
+      const milkProd = document.getElementById("milkProd").value;
+      const weight = parseFloat(document.getElementById("weight").value);
+      const milkLiters = parseFloat(document.getElementById("milkLiters").value || 0);
+      let resultText = '';
+
+      if (isNaN(weight) || weight <= 0) {
+        alert("يرجى إدخال وزن صحيح.");
+        return;
+      }
+
+      if (method === "traditional") {
+        let base = Math.pow(weight, 0.75) * 4;
+        let protein = 0;
+
+        if (gender === "male") {
+          protein = base + 200;
+        } else {
+          if (milkProd === "no") {
+            protein = base + 150;
+          } else {
+            let milkFactor = 0;
+            if (animal === "cow") milkFactor = 34;
+            else if (animal === "sheep") milkFactor = 55;
+            else if (animal === "goat") milkFactor = 48;
+            else milkFactor = 34;
+
+            protein = base + 200 + (milkFactor * milkLiters * 3.5);
+          }
+        }
+
+        resultText += `💪 كمية البروتين المطلوبة: ${protein.toFixed(2)} جرام يوميًا\n`;
+      } else if (method === "tmr") {
+        const dryMatter = weight * 0.045;
+        resultText += `🌾 الكمية المطلوبة من المادة الجافة: ${dryMatter.toFixed(2)} كجم يوميًا\n`;
+      } else if (method === "nrc") {
+        const nrcTable = {
+          50: { cp: 0.30, tdn: 0.95 },
+          100: { cp: 0.52, tdn: 1.80 },
+          150: { cp: 0.72, tdn: 2.55 },
+          200: { cp: 0.92, tdn: 3.30 },
+          250: { cp: 1.12, tdn: 3.97 },
+          300: { cp: 1.30, tdn: 4.62 },
+          350: { cp: 1.45, tdn: 5.20 },
+          400: { cp: 1.60, tdn: 5.75 },
+          450: { cp: 1.75, tdn: 6.19 },
+          500: { cp: 1.90, tdn: 6.60 },
+          550: { cp: 2.00, tdn: 6.90 },
+          600: { cp: 2.10, tdn: 7.26 },
+          650: { cp: 2.20, tdn: 7.58 },
+          700: { cp: 2.30, tdn: 7.70 }
+        };
+
+        const closest = Object.keys(nrcTable)
+          .map(w => parseInt(w))
+          .reduce((prev, curr) => Math.abs(curr - weight) < Math.abs(prev - weight) ? curr : prev);
+
+        const cp = nrcTable[closest].cp;
+        const tdn = nrcTable[closest].tdn;
+
+        resultText += `📊 الوزن المقارب: ${closest} كجم\n`;
+        resultText += `💪 البروتين المطلوب: ${cp.toFixed(2)} كجم يوميًا\n`;
+        resultText += `🔥 الطاقة (TDN): ${tdn.toFixed(2)} كجم يوميًا\n`;
+      }
+
+      document.getElementById("result").innerText = resultText;
+    }
+
+    window.onload = () => {
+      toggleMilkOptions();
+      toggleMilkInput();
+      updateAnimalImage();
+    };
+  </script>
+</body>
+</html>
